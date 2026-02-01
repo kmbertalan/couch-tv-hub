@@ -38,7 +38,7 @@ export const mapMovieToRecord = (movie: TmdbMovie): MediaRecord => ({
     ? `${TMDB_IMAGE_BASE}${movie.poster_path}`
     : null,
   overview: movie.overview,
-  release_date: movie.release_date,
+  release_date: movie.release_date || null,
 });
 
 export const mapTVToRecord = (tv: TmdbTV): MediaRecord => ({
@@ -47,7 +47,7 @@ export const mapTVToRecord = (tv: TmdbTV): MediaRecord => ({
   type: "tv",
   poster_url: tv.poster_path ? `${TMDB_IMAGE_BASE}${tv.poster_path}` : null,
   overview: tv.overview,
-  release_date: tv.first_air_date,
+  release_date: tv.first_air_date || null,
 });
 
 export const searchMovie = async (title: string): Promise<MediaRecord[]> => {

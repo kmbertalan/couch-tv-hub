@@ -4,9 +4,9 @@ import AddTitleForm from "./components/AddTitleForm.vue";
 import ListTitles from "./components/ListTitles.vue";
 import { supabase } from "./supabaseClient";
 import { searchMovie, searchTV } from "./tmdb";
-import type { Title } from "./types";
+import type { DBMediaRecord } from "./types";
 
-const titles = ref<Title[]>([]);
+const titles = ref<DBMediaRecord[]>([]);
 
 const loadTitles = async () => {
   const { data, error } = await supabase.from("titles").select("*");
@@ -38,7 +38,7 @@ const addTitle = async (newTitle: string) => {
     return;
   }
 
-  titles.value.push(data);
+  titles.value.push(data as DBMediaRecord);
 };
 
 onMounted(() => {

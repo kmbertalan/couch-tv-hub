@@ -1,22 +1,26 @@
 <script setup lang="ts">
-import type { Title } from "../types";
+import TitleCard from "./TitleCard.vue";
+import type { MediaRecord } from "../tmdb";
 
-defineProps<{ titles: Title[] }>();
+defineProps<{
+  titles: MediaRecord[];
+}>();
 </script>
 
 <template>
-  <div class="grid">
-    <div v-for="item in titles" :key="item.id" class="card">
-      <img :src="item.poster_url" alt="poster" />
-      <h3>{{ item.title }}</h3>
-      <p>{{ item.type }} | {{ item.release_date }}</p>
-      <p>{{ item.overview }}</p>
-    </div>
+  <div class="list">
+    <TitleCard
+      v-for="title in titles"
+      :key="`${title.type}-${title.tmdb_id}`"
+      :record="title"
+    />
   </div>
 </template>
 
 <style scoped>
-.read-the-docs {
-  color: #888;
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
 }
 </style>
