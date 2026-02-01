@@ -3,24 +3,42 @@ import { onMounted, ref } from "vue";
 import AddTitleForm from "./components/AddTitleForm.vue";
 import ListTitles from "./components/ListTitles.vue";
 import { supabase } from "./supabaseClient";
+import { searchMovie, searchTV } from "./tmdb";
+import type { Title } from "./types";
 
-const titles = ref<string[]>([]);
+const titles = ref<Title[]>([]);
 
 const loadTitles = async () => {
-  const { data, error } = await supabase.from("titles").select("title");
+  const { data, error } = await supabase.from("titles").select("*");
   if (error) console.error(error);
-  else titles.value = data.map((item) => item.title);
+  else titles.value = data;
 };
 
 const addTitle = async (newTitle: string) => {
   if (!newTitle.trim()) return;
 
+  const movies = await searchMovie(newTitle);
+  const tvShows = await searchTV(newTitle);
+
+  const record = movies.length > 0 ? movies[0] : tvShows[0];
+
+  if (!record) {
+    console.error("No TMDB match found");
+    return;
+  }
+
   const { data, error } = await supabase
     .from("titles")
-    .insert([{ title: newTitle.trim() }]);
+    .insert([record])
+    .select()
+    .single();
 
-  if (error) console.error(error);
-  else titles.value.push(newTitle.trim());
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  titles.value.push(data);
 };
 
 onMounted(() => {

@@ -1,12 +1,17 @@
 <script setup lang="ts">
-defineProps<{ titles: string[] }>();
+import type { Title } from "../types";
+
+defineProps<{ titles: Title[] }>();
 </script>
 
 <template>
-  <div class="card">
-    <ul>
-      <li v-for="title in titles" :key="title">{{ title }}</li>
-    </ul>
+  <div class="grid">
+    <div v-for="item in titles" :key="item.id" class="card">
+      <img :src="item.poster_url" alt="poster" />
+      <h3>{{ item.title }}</h3>
+      <p>{{ item.type }} | {{ item.release_date }}</p>
+      <p>{{ item.overview }}</p>
+    </div>
   </div>
 </template>
 
