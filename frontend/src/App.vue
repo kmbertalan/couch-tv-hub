@@ -1,5 +1,15 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+import { ref } from "vue";
+import AddTitleForm from "./components/AddTitleForm.vue";
+import ListTitles from "./components/ListTitles.vue";
+
+const titles = ref<string[]>([]);
+
+const addTitle = (newTitle: string) => {
+  if (newTitle.trim()) {
+    titles.value.push(newTitle.trim());
+  }
+};
 </script>
 
 <template>
@@ -11,7 +21,8 @@ import HelloWorld from './components/HelloWorld.vue'
       <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
     </a>
   </div>
-  <HelloWorld msg="Vite + Vue" />
+  <AddTitleForm @submit="addTitle" />
+  <ListTitles :titles="titles" />
 </template>
 
 <style scoped>
