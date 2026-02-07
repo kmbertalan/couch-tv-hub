@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { supabase } from "../supabaseClient";
 import type { DBMediaRecord } from "../types";
 import ListTitles from "../components/ListTitles.vue";
 import { useRouter } from "vue-router";
 
+const filter = ref<"all" | "movie" | "tv">("all");
 const router = useRouter();
 
 const logout = async () => {
@@ -13,6 +14,11 @@ const logout = async () => {
 };
 
 const titles = ref<DBMediaRecord[]>([]);
+
+const filteredTitles = computed(() => {
+  if (filter.value === "all") return titles.value;
+  return titles.value.filter((t) => t.type === filter.value);
+});
 
 const loadTitles = async () => {
   const { data, error } = await supabase
@@ -61,7 +67,19 @@ onMounted(loadTitles);
   <button v-if="titles.length > 0" class="delete-all" @click="deleteAll">
     Delete all
   </button>
-  <ListTitles :titles="titles" @delete="deleteTitle" />
+  <div class="filters">
+    <button @click="filter = 'all'" :class="{ active: filter === 'all' }">
+      All
+    </button>
+    <button @click="filter = 'movie'" :class="{ active: filter === 'movie' }">
+      Movies
+    </button>
+    <button @click="filter = 'tv'" :class="{ active: filter === 'tv' }">
+      TV Shows
+    </button>
+  </div>
+
+  <ListTitles :titles="filteredTitles" @delete="deleteTitle" />
 </template>
 
 <style scoped>
@@ -97,5 +115,24 @@ onMounted(loadTitles);
 
 .logout:hover {
   background: #444;
+}
+
+.filters {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.filters button {
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: #222;
+  color: white;
+}
+
+.filters button.active {
+  background: #555;
 }
 </style>
