@@ -3,6 +3,14 @@ import { onMounted, ref } from "vue";
 import { supabase } from "../supabaseClient";
 import type { DBMediaRecord } from "../types";
 import ListTitles from "../components/ListTitles.vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
+const logout = async () => {
+  await supabase.auth.signOut();
+  router.push("/login");
+};
 
 const titles = ref<DBMediaRecord[]>([]);
 
@@ -45,7 +53,10 @@ onMounted(loadTitles);
 </script>
 
 <template>
-  <router-link to="/">Back to Search</router-link>
+  <div class="header">
+    <router-link to="/">Search</router-link>
+    <button class="logout" @click="logout">Logout</button>
+  </div>
   <h1>My Watchlist</h1>
   <button v-if="titles.length > 0" class="delete-all" @click="deleteAll">
     Delete all
@@ -66,5 +77,25 @@ onMounted(loadTitles);
 
 .delete-all:hover {
   background: #991b1b;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.logout {
+  padding: 0.5rem 0.9rem;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.logout:hover {
+  background: #444;
 }
 </style>

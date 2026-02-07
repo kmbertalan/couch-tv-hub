@@ -27,6 +27,15 @@ const addTitle = async (record: MediaRecord): Promise<boolean> => {
     return false;
   }
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    console.error("No user session available");
+    return false;
+  }
+
   try {
     const { data, error } = await supabase
       .from("titles")
@@ -34,6 +43,7 @@ const addTitle = async (record: MediaRecord): Promise<boolean> => {
         {
           ...record,
           release_date: record.release_date || null,
+          user_id: user.id,
         },
       ])
       .select()
