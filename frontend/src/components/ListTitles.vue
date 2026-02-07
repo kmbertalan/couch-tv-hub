@@ -1,10 +1,18 @@
 <script setup lang="ts">
 import TitleCard from "./TitleCard.vue";
-import type { MediaRecord } from "../tmdb";
+import type { DBMediaRecord } from "../types";
 
 defineProps<{
-  titles: MediaRecord[];
+  titles: DBMediaRecord[];
 }>();
+
+const emit = defineEmits<{
+  (e: "delete", record: DBMediaRecord): void;
+}>();
+
+const forwardDelete = (record: DBMediaRecord) => {
+  emit("delete", record);
+};
 </script>
 
 <template>
@@ -13,6 +21,7 @@ defineProps<{
       v-for="title in titles"
       :key="`${title.type}-${title.tmdb_id}`"
       :record="title"
+      @delete="forwardDelete"
     />
   </div>
 </template>

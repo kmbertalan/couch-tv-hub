@@ -16,7 +16,7 @@ const submit = () => {
   <div class="card">
     <form @submit.prevent="submit">
       <input v-model="message" placeholder="Enter title" />
-      <button type="submit">Save Title</button>
+      <button type="submit">Search</button>
     </form>
   </div>
 </template>

@@ -1,13 +1,22 @@
 <script setup lang="ts">
-import type { MediaRecord } from "../tmdb";
+import type { DBMediaRecord } from "../types";
 
-const { record } = defineProps<{ record: MediaRecord }>();
+const { record } = defineProps<{ record: DBMediaRecord }>();
+
+const emit = defineEmits<{
+  (e: "delete", record: DBMediaRecord): void;
+}>();
+
+const deleteRecord = () => {
+  emit("delete", record);
+};
 
 const year = record.release_date ? record.release_date.slice(0, 4) : "—";
 </script>
 
 <template>
   <div class="card">
+    <button class="delete-btn" @click.stop="deleteRecord">Delete</button>
     <div class="poster-wrapper">
       <img
         v-if="record.poster_url"
@@ -109,5 +118,18 @@ const year = record.release_date ? record.release_date.slice(0, 4) : "—";
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.delete-btn {
+  width: 100%;
+  border: none;
+  background: #b91c1c;
+  color: white;
+  padding: 0.4rem;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
 }
 </style>
