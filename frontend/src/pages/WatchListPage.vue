@@ -59,30 +59,37 @@ onMounted(loadTitles);
 </script>
 
 <template>
-  <div class="header">
-    <router-link to="/">Search</router-link>
-    <button class="logout" @click="logout">Logout</button>
+  <div class="page">
+    <div class="header">
+      <router-link to="/">Search</router-link>
+      <button class="logout" @click="logout">Logout</button>
+    </div>
+    <h1>My Watchlist</h1>
+    <button v-if="titles.length > 0" class="delete-all" @click="deleteAll">
+      Delete all
+    </button>
+    <div class="filters">
+      <button @click="filter = 'all'" :class="{ active: filter === 'all' }">
+        All
+      </button>
+      <button @click="filter = 'movie'" :class="{ active: filter === 'movie' }">
+        Movies
+      </button>
+      <button @click="filter = 'tv'" :class="{ active: filter === 'tv' }">
+        TV Shows
+      </button>
+    </div>
+    <ListTitles :titles="filteredTitles" @delete="deleteTitle" />
   </div>
-  <h1>My Watchlist</h1>
-  <button v-if="titles.length > 0" class="delete-all" @click="deleteAll">
-    Delete all
-  </button>
-  <div class="filters">
-    <button @click="filter = 'all'" :class="{ active: filter === 'all' }">
-      All
-    </button>
-    <button @click="filter = 'movie'" :class="{ active: filter === 'movie' }">
-      Movies
-    </button>
-    <button @click="filter = 'tv'" :class="{ active: filter === 'tv' }">
-      TV Shows
-    </button>
-  </div>
-
-  <ListTitles :titles="filteredTitles" @delete="deleteTitle" />
 </template>
 
 <style scoped>
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
 .delete-all {
   margin: 1rem 0;
   padding: 0.6rem 1rem;
@@ -120,19 +127,27 @@ onMounted(loadTitles);
 .filters {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
 }
 
 .filters button {
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  border: none;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid #333;
   cursor: pointer;
-  background: #222;
-  color: white;
+  background: transparent;
+  color: #aaa;
+  transition: all 0.15s ease;
+}
+
+.filters button:hover {
+  border-color: #555;
+  color: black;
 }
 
 .filters button.active {
-  background: #555;
+  background: #2563eb;
+  border-color: #2563eb;
+  color: white;
 }
 </style>
