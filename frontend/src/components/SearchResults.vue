@@ -32,10 +32,10 @@ const selectRecord = (record: MediaRecord) => {
 
       <div class="content">
         <h3>{{ record.title }}</h3>
-        <span class="meta"
-          >{{ record.type }} •
-          {{ record.release_date?.slice(0, 4) ?? "—" }}</span
-        >
+        <span class="meta">
+          {{ record.type }} • ⭐ {{ record.vote_average.toFixed(1) }} •
+          {{ record.release_date?.slice(0, 4) ?? "—" }}
+        </span>
       </div>
     </div>
   </div>

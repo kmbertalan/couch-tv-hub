@@ -9,6 +9,8 @@ type TmdbMovie = {
   readonly poster_path: string | null;
   readonly overview: string;
   readonly release_date: string | null;
+  readonly popularity: number;
+  readonly vote_average: number;
 };
 
 type TmdbTV = {
@@ -17,6 +19,8 @@ type TmdbTV = {
   readonly poster_path: string | null;
   readonly overview: string;
   readonly first_air_date: string | null;
+  readonly popularity: number;
+  readonly vote_average: number;
 };
 
 export type MediaRecord = {
@@ -26,6 +30,8 @@ export type MediaRecord = {
   readonly poster_url: string | null;
   readonly overview: string;
   readonly release_date: string | null;
+  readonly popularity: number;
+  readonly vote_average: number;
 };
 
 const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
@@ -38,7 +44,9 @@ export const mapMovieToRecord = (movie: TmdbMovie): MediaRecord => ({
     ? `${TMDB_IMAGE_BASE}${movie.poster_path}`
     : null,
   overview: movie.overview,
-  release_date: movie.release_date || null,
+  release_date: movie.release_date,
+  popularity: movie.popularity,
+  vote_average: movie.vote_average,
 });
 
 export const mapTVToRecord = (tv: TmdbTV): MediaRecord => ({
@@ -47,7 +55,9 @@ export const mapTVToRecord = (tv: TmdbTV): MediaRecord => ({
   type: "tv",
   poster_url: tv.poster_path ? `${TMDB_IMAGE_BASE}${tv.poster_path}` : null,
   overview: tv.overview,
-  release_date: tv.first_air_date || null,
+  release_date: tv.first_air_date,
+  popularity: tv.popularity,
+  vote_average: tv.vote_average,
 });
 
 export const searchMovie = async (title: string): Promise<MediaRecord[]> => {

@@ -68,13 +68,38 @@ const handleSelect = async (record: MediaRecord) => {
   if (success) searchResults.value = [];
 };
 
+const scoreRecord = (record: MediaRecord, query: string): number => {
+  let score = 0;
+
+  score += record.popularity * 1.5;
+
+  score += record.vote_average * 10;
+
+  if (record.release_date) {
+    const year = Number(record.release_date.slice(0, 4));
+    score += Math.max(0, year - 2000);
+  }
+
+  if (record.title.toLowerCase().startsWith(query.toLowerCase())) {
+    score += 100;
+  }
+
+  return score;
+};
+
 const searchTitle = async (newTitle: string) => {
   if (!newTitle.trim()) return;
 
   const movies = await searchMovie(newTitle);
   const tvShows = await searchTV(newTitle);
 
-  searchResults.value = [...movies, ...tvShows];
+  const combined = [...movies, ...tvShows];
+
+  const filtered = combined.filter((r) => r.poster_url && r.popularity > 1);
+
+  filtered.sort((a, b) => scoreRecord(b, newTitle) - scoreRecord(a, newTitle));
+
+  searchResults.value = filtered.slice(0, 20);
 };
 
 onMounted(() => {
