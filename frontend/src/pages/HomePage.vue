@@ -1,129 +1,28 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import AddTitleForm from "./../components/AddTitleForm.vue";
-import SearchResults from "./../components/SearchResults.vue";
-import { supabase } from "./../supabaseClient";
-import { searchMovie, searchTV, type MediaRecord } from "./../tmdb";
-import type { DBMediaRecord, Provider } from "./../types";
-import { fetchProviders } from "../tmdbProviders";
+import { onMounted } from "vue";
+import { useTitles } from "../composables/useTitles";
+import { useSearch } from "../composables/useSearch";
+import Layout from "../components/Layout.vue";
+import AddTitleForm from "../components/AddTitleForm.vue";
+import SearchResults from "../components/SearchResults.vue";
+import type { MediaRecord } from "../tmdb";
 
-const titles = ref<DBMediaRecord[]>([]);
-const searchResults = ref<MediaRecord[]>([]);
-
-const loadTitles = async () => {
-  const { data, error } = await supabase.from("titles").select("*");
-  if (error) console.error(error);
-  else titles.value = data;
-};
-
-const addTitle = async (record: MediaRecord): Promise<boolean> => {
-  if (!record) return false;
-
-  const exists = titles.value.some(
-    (t) => t.tmdb_id === record.tmdb_id && t.type === record.type
-  );
-
-  if (exists) {
-    alert("Already in watchlist");
-    return false;
-  }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    console.error("No user session available");
-    return false;
-  }
-
-  try {
-    const { data: inserted, error: insertError } = await supabase
-      .from("titles")
-      .insert([
-        {
-          ...record,
-          release_date: record.release_date || null,
-          user_id: user.id,
-        },
-      ])
-      .select()
-      .single();
-
-    if (insertError || !inserted) {
-      console.error("Failed to insert title:", insertError);
-      return false;
-    }
-
-    let providers: Provider[] = [];
-    try {
-      providers = await fetchProviders(record.tmdb_id, record.type, "HU");
-    } catch (err) {
-      console.error("Failed to fetch providers:", err);
-    }
-
-    let updatedRecord = inserted;
-    if (providers.length > 0) {
-      const { data: updated, error: updateError } = await supabase
-        .from("titles")
-        .update({ providers })
-        .eq("id", inserted.id)
-        .select()
-        .maybeSingle();
-
-      if (updateError) {
-        console.error("Failed to update providers:", updateError);
-      } else if (updated) {
-        updatedRecord = updated;
-      }
-    }
-
-    titles.value.push(updatedRecord);
-    return true;
-  } catch (err) {
-    console.error("Unexpected error in addTitle:", err);
-    return false;
-  }
-};
+const { addTitle, loadTitles, error: titleError } = useTitles();
+const { results, loading, search, clearResults } = useSearch();
 
 const handleSelect = async (record: MediaRecord) => {
   const success = await addTitle(record);
-
-  if (success) searchResults.value = [];
+  if (success) {
+    clearResults();
+  }
 };
 
-const scoreRecord = (record: MediaRecord, query: string): number => {
-  let score = 0;
-
-  score += record.popularity * 1.5;
-
-  score += record.vote_average * 10;
-
-  if (record.release_date) {
-    const year = Number(record.release_date.slice(0, 4));
-    score += Math.max(0, year - 2000);
+const handleSearch = (query: string) => {
+  if (!query.trim()) {
+    clearResults();
+    return;
   }
-
-  if (record.title.toLowerCase().startsWith(query.toLowerCase())) {
-    score += 100;
-  }
-
-  return score;
-};
-
-const searchTitle = async (newTitle: string) => {
-  if (!newTitle.trim()) return;
-
-  const movies = await searchMovie(newTitle);
-  const tvShows = await searchTV(newTitle);
-
-  const combined = [...movies, ...tvShows];
-
-  const filtered = combined.filter((r) => r.poster_url && r.popularity > 1);
-
-  filtered.sort((a, b) => scoreRecord(b, newTitle) - scoreRecord(a, newTitle));
-
-  searchResults.value = filtered.slice(0, 20);
+  search(query);
 };
 
 onMounted(() => {
@@ -132,22 +31,62 @@ onMounted(() => {
 </script>
 
 <template>
-  <router-link to="/watchlist">Go to Watchlist</router-link>
-  <AddTitleForm @submit="searchTitle" />
-  <SearchResults :results="searchResults" @select="handleSelect" />
+  <Layout>
+    <div class="container page">
+      <div class="page-header">
+        <h1>Find Movies & TV Shows</h1>
+        <p>Search for titles to add to your watchlist</p>
+      </div>
+
+      <AddTitleForm @submit="handleSearch" />
+
+      <div v-if="titleError" class="error-message mt-2">{{ titleError }}</div>
+
+      <div v-if="loading" class="loading-state">
+        <div class="spinner"></div>
+        <span>Searching...</span>
+      </div>
+
+      <SearchResults
+        v-else-if="results.length"
+        :results="results"
+        @select="handleSelect"
+      />
+
+    </div>
+  </Layout>
 </template>
 
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+.page {
+  padding-bottom: 2rem;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+
+.page-header {
+  text-align: center;
+  margin-bottom: 2rem;
 }
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+
+.page-header h1 {
+  font-size: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.page-header p {
+  color: var(--text-secondary);
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem;
+  color: var(--text-secondary);
+}
+
+.loading-state .spinner {
+  width: 24px;
+  height: 24px;
 }
 </style>

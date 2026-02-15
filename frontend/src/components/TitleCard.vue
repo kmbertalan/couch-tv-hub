@@ -16,7 +16,6 @@ const year = record.release_date ? record.release_date.slice(0, 4) : "—";
 
 <template>
   <div class="card">
-    <button class="delete-btn" @click.stop="deleteRecord">Delete</button>
     <div class="poster-wrapper">
       <img
         v-if="record.poster_url"
@@ -24,7 +23,12 @@ const year = record.release_date ? record.release_date.slice(0, 4) : "—";
         :alt="record.title"
         class="poster"
       />
-      <div v-else class="poster placeholder">No image</div>
+      <div v-else class="poster placeholder">
+        <span>No image</span>
+      </div>
+      <button class="delete-btn" @click.stop="deleteRecord" title="Remove from watchlist">
+        <span class="delete-icon">×</span>
+      </button>
     </div>
 
     <div class="content">
@@ -34,8 +38,8 @@ const year = record.release_date ? record.release_date.slice(0, 4) : "—";
       </div>
 
       <div class="meta">
-        <span>{{ year }}</span>
-        <span v-if="record.vote_average">
+        <span class="year">{{ year }}</span>
+        <span v-if="record.vote_average" class="rating">
           ⭐ {{ record.vote_average.toFixed(1) }}
         </span>
       </div>
@@ -52,123 +56,180 @@ const year = record.release_date ? record.release_date.slice(0, 4) : "—";
         :src="provider.logo_url ?? ''"
         :alt="provider.name"
         class="provider-logo"
+        :title="provider.name"
       />
     </div>
   </div>
 </template>
 
 <style scoped>
+.card {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid var(--border-strong);
+  height: 100%;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
 .poster-wrapper {
+  position: relative;
   aspect-ratio: 2 / 3;
-  background: #222;
+  background: var(--surface-2);
+  overflow: hidden;
 }
 
 .poster {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.card:hover .poster {
+  transform: scale(1.03);
 }
 
 .placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #777;
+  color: var(--text-muted);
   font-size: 0.9rem;
+  width: 100%;
+  height: 100%;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.card:hover .delete-btn {
+  opacity: 1;
+}
+
+.delete-btn:hover {
+  background: var(--danger);
+  transform: scale(1.1);
+}
+
+.delete-icon {
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
 .content {
-  padding: 0.75rem;
+  padding: 0.875rem;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.5rem;
+  flex: 1;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   gap: 0.5rem;
 }
 
 .title {
   font-size: 0.95rem;
-  line-height: 1.2;
+  line-height: 1.3;
   margin: 0;
+  color: var(--text-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.badge {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--surface-2);
+  color: var(--text-secondary);
+}
+
+.meta {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.year {
+  color: var(--text-muted);
+}
+
+.rating {
+  color: #fbbf24;
 }
 
 .overview {
   font-size: 0.8rem;
-  color: #ccc;
-  line-height: 1.3;
-
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.delete-btn {
-  width: 100%;
-  border: none;
-  background: #b91c1c;
-  color: white;
-  padding: 0.4rem;
-  cursor: pointer;
-}
-
-.delete-btn:hover {
-  background: #dc2626;
-}
-
-.card {
-  display: flex;
-  flex-direction: column;
-  border-radius: 14px;
-  background: #111;
-  color: #fff;
-  overflow: hidden;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-  border: 1px solid #1f1f1f;
-}
-
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.6);
-}
-
-.badge {
-  font-size: 0.65rem;
-  padding: 0.2rem 0.45rem;
-  border-radius: 999px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  background: #1f2937;
-  color: #cbd5e1;
-}
-
-.meta {
-  font-size: 0.75rem;
-  color: #aaa;
-  display: flex;
-  gap: 0.6rem;
-  align-items: center;
-}
-
 .providers {
   display: flex;
   gap: 0.4rem;
-  margin-top: auto;
   flex-wrap: wrap;
+  padding: 0 0.875rem 0.875rem;
 }
 
 .provider-logo {
-  height: 48px;
+  height: 36px;
   width: auto;
   object-fit: contain;
-  border: 1px solid #333;
-  border-radius: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   padding: 2px;
-  background: rgba(255, 255, 255, 0.05);
-  /* Remove filter to show logos in their original colors */
+  background: var(--surface-2);
+}
+
+@media (max-width: 640px) {
+  .delete-btn {
+    opacity: 1;
+    width: 28px;
+    height: 28px;
+  }
+
+  .provider-logo {
+    height: 32px;
+  }
 }
 </style>
