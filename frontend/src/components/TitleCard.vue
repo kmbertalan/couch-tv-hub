@@ -44,6 +44,16 @@ const year = record.release_date ? record.release_date.slice(0, 4) : "—";
         {{ record.overview }}
       </p>
     </div>
+
+    <div class="providers" v-if="record.providers?.length">
+      <img
+        v-for="provider in record.providers"
+        :key="provider.name"
+        :src="provider.logo_url ?? ''"
+        :alt="provider.name"
+        class="provider-logo"
+      />
+    </div>
   </div>
 </template>
 
@@ -142,5 +152,23 @@ const year = record.release_date ? record.release_date.slice(0, 4) : "—";
   display: flex;
   gap: 0.6rem;
   align-items: center;
+}
+
+.providers {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: auto;
+  flex-wrap: wrap;
+}
+
+.provider-logo {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 2px;
+  background: rgba(255, 255, 255, 0.05);
+  /* Remove filter to show logos in their original colors */
 }
 </style>

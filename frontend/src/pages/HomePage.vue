@@ -4,7 +4,8 @@ import AddTitleForm from "./../components/AddTitleForm.vue";
 import SearchResults from "./../components/SearchResults.vue";
 import { supabase } from "./../supabaseClient";
 import { searchMovie, searchTV, type MediaRecord } from "./../tmdb";
-import type { DBMediaRecord } from "./../types";
+import type { DBMediaRecord, Provider } from "./../types";
+import { fetchProviders } from "../tmdbProviders";
 
 const titles = ref<DBMediaRecord[]>([]);
 const searchResults = ref<MediaRecord[]>([]);
@@ -37,7 +38,7 @@ const addTitle = async (record: MediaRecord): Promise<boolean> => {
   }
 
   try {
-    const { data, error } = await supabase
+    const { data: inserted, error: insertError } = await supabase
       .from("titles")
       .insert([
         {
@@ -49,15 +50,38 @@ const addTitle = async (record: MediaRecord): Promise<boolean> => {
       .select()
       .single();
 
-    if (error) {
-      console.error("Failed to insert:", error);
+    if (insertError || !inserted) {
+      console.error("Failed to insert title:", insertError);
       return false;
     }
 
-    titles.value.push(data as DBMediaRecord);
+    let providers: Provider[] = [];
+    try {
+      providers = await fetchProviders(record.tmdb_id, record.type, "HU");
+    } catch (err) {
+      console.error("Failed to fetch providers:", err);
+    }
+
+    let updatedRecord = inserted;
+    if (providers.length > 0) {
+      const { data: updated, error: updateError } = await supabase
+        .from("titles")
+        .update({ providers })
+        .eq("id", inserted.id)
+        .select()
+        .maybeSingle();
+
+      if (updateError) {
+        console.error("Failed to update providers:", updateError);
+      } else if (updated) {
+        updatedRecord = updated;
+      }
+    }
+
+    titles.value.push(updatedRecord);
     return true;
   } catch (err) {
-    console.error("Unexpected error:", err);
+    console.error("Unexpected error in addTitle:", err);
     return false;
   }
 };
